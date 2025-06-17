@@ -1,0 +1,23 @@
+name: example
+description: sticky_grouped_list example.
+publish_to: 'none' 
+version: 0.0.1
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  advanced_grouped_list:
+    path: ../
+  intl: ^0.17.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+  
+flutter: 
+  uses-material-design: true
