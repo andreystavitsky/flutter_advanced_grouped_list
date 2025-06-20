@@ -1,5 +1,5 @@
-[![pub package](https://img.shields.io/pub/v/flutter_advanced_grouped_list.svg)](https://pub.dev/packages/flutter_advanced_grouped_list)
-[![package publisher](https://img.shields.io/pub/publisher/flutter_advanced_grouped_list.svg)](https://pub.dev/packages/flutter_advanced_grouped_list)
+[![pub package](https://img.shields.io/pub/v/advanced_grouped_list.svg)](https://pub.dev/packages/advanced_grouped_list)
+[![package publisher](https://img.shields.io/pub/publisher/advanced_grouped_list.svg)](https://pub.dev/packages/advanced_grouped_list)
 ![build](https://github.com/andreystavitsky/flutter_advanced_grouped_list/actions/workflows/main.yaml/badge.svg??branch=main)
 
 ---
