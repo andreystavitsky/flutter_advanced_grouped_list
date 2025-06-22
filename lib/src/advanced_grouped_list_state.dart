@@ -235,7 +235,7 @@ class AdvancedGroupedListViewState<T, E>
   }
 
   /// Builds the item widget for the given index.
-  Widget _buildItem(context, int actualIndex) {
+  Widget _buildItem(BuildContext context, int actualIndex) {
     if (actualIndex < 0 || actualIndex >= sortedElements.length) {
       developer.log('actualIndex $actualIndex out of bounds for sortedElements',
           name: 'StickyGroupedListView');
