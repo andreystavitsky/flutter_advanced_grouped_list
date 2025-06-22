@@ -1,13 +1,15 @@
-part of 'advanced_grouped_list.dart';
+part of 'advanced_grouped_list_library.dart';
 
 /// Manages element and group operations for the grouped list view
 class GroupedListElementManager<T, E> {
+  /// The cache manager used for caching group and element data.
   final GroupedListCacheManager<T, E> cacheManager;
 
   List<T>? _lastElements;
   int? _lastOrderHash;
   List<T>? _lastSortedElements;
 
+  /// Creates a [GroupedListElementManager] with the provided [cacheManager].
   GroupedListElementManager(this.cacheManager);
 
   /// Get the group for a given element index
@@ -202,7 +204,7 @@ class GroupedListElementManager<T, E> {
       });
     }
 
-    if (order == AdvancedGroupedListOrder.DESC) {
+    if (order == AdvancedGroupedListOrder.desc) {
       sortedElements = sortedElements.reversed.toList();
     }
 

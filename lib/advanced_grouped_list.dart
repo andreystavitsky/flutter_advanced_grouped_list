@@ -12,14 +12,16 @@
 /// ```
 library advanced_grouped_list;
 
-export 'src/advanced_grouped_list.dart'
+import 'package:flutter/widgets.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+export 'src/advanced_grouped_list_order.dart';
+
+export 'src/advanced_grouped_list_library.dart'
     show
         AdvancedGroupedListView,
         GroupedItemScrollController,
         AdvancedGroupedListViewState;
-export 'src/advanced_grouped_list_order.dart' show AdvancedGroupedListOrder;
-
-export 'src/item_positions_listener_ext.dart';
 
 export 'package:scrollable_positioned_list/scrollable_positioned_list.dart'
     show
@@ -27,3 +29,5 @@ export 'package:scrollable_positioned_list/scrollable_positioned_list.dart'
         ScrollOffsetController,
         ScrollOffsetListener,
         ItemPosition;
+
+part 'src/item_positions_listener_ext.dart';

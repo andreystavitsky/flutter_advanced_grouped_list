@@ -1,4 +1,4 @@
-part of 'advanced_grouped_list.dart';
+part of 'advanced_grouped_list_library.dart';
 
 /// Manages all caching operations for the grouped list view
 class GroupedListCacheManager<T, E> {
@@ -22,11 +22,22 @@ class GroupedListCacheManager<T, E> {
   bool _cachesNeedRebuild = true;
 
   // Getters
+  /// Returns the cache for groupBy results.
   Map<T, E> get groupByCache => _groupByCache;
+
+  /// Returns the index mapping groups to their element indices.
   Map<E, List<int>> get groupToIndicesMap => _groupToIndicesMap;
+
+  /// Returns the cache for element identifier results.
   Map<T, dynamic> get elementIdentifierCache => _elementIdentifierCache;
+
+  /// Returns the cache for header dimensions by group.
   Map<E, double> get headerDimensionsCache => _headerDimensionsCache;
+
+  /// Returns the cache for trusted header measurements.
   Map<E, double> get trustedHeaderMeasurements => _trustedHeaderMeasurements;
+
+  /// Returns whether caches need rebuilding.
   bool get cachesNeedRebuild => _cachesNeedRebuild;
 
   /// Cached groupBy function to avoid repeated calls
@@ -91,6 +102,10 @@ class GroupedListCacheManager<T, E> {
   }
 
   /// Update header dimension cache
+  ///
+  /// [group] The group whose header dimension is being updated.
+  /// [dimension] The new dimension value.
+  /// [trusted] Whether the measurement is trusted (from accurate measurement).
   void updateHeaderDimension(E group, double dimension,
       {bool trusted = false}) {
     _headerDimensionsCache[group] = dimension;
@@ -100,6 +115,9 @@ class GroupedListCacheManager<T, E> {
   }
 
   /// Get cached header dimension for group
+  ///
+  /// [group] The group whose header dimension is requested.
+  /// Returns the cached dimension if available, otherwise null.
   double? getCachedHeaderDimension(E group) {
     // Check trusted measurements first
     if (_trustedHeaderMeasurements.containsKey(group)) {
@@ -109,6 +127,10 @@ class GroupedListCacheManager<T, E> {
   }
 
   /// Check if header cache should be updated
+  ///
+  /// [group] The group whose header dimension is being checked.
+  /// [newDimension] The new dimension value to compare.
+  /// Returns true if the cache should be updated, false otherwise.
   bool shouldUpdateHeaderCache(E group, double newDimension) {
     // Don't update if we have a trusted measurement
     if (_trustedHeaderMeasurements.containsKey(group)) {

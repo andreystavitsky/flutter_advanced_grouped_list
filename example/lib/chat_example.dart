@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
               height: 700,
               child: AdvancedGroupedListView<Element, DateTime>(
                 elements: _elements,
-                order: AdvancedGroupedListOrder.DESC,
+                order: AdvancedGroupedListOrder.desc,
                 reverse: true,
                 groupBy: (Element element) => DateTime(
                   element.date.year,

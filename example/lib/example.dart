@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         ),
         body: AdvancedGroupedListView<Element, DateTime>(
           elements: _elements,
-          order: AdvancedGroupedListOrder.ASC,
+          order: AdvancedGroupedListOrder.asc,
           groupBy: (Element element) => DateTime(
             element.date.year,
             element.date.month,

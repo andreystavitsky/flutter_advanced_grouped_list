@@ -1,12 +1,12 @@
-part of 'advanced_grouped_list.dart';
+part of 'advanced_grouped_list_library.dart';
 
-/// Controller to jump or scroll to a particular element the list.
+/// Controller to jump or scroll to a particular element in the list.
 ///
 /// See [ItemScrollController].
 class GroupedItemScrollController extends ItemScrollController {
   AdvancedGroupedListViewState? _stickyGroupedListViewState;
 
-  /// Whether any [AdvancedGroupedListView] objects are attached this object.
+  /// Whether any [AdvancedGroupedListView] objects are attached to this object.
   ///
   /// If `false`, then [jumpTo] and [scrollTo] must not be called.
   @override
@@ -77,6 +77,21 @@ class GroupedItemScrollController extends ItemScrollController {
 
     try {
       if (automaticAlignment) {
+        // Force measurement of header for target group
+        // before calculating alignment
+        try {
+          final group =
+              _stickyGroupedListViewState!.getGroupForElementIndex(index);
+
+          // Force measurement of the header for target group to ensure
+          // accurate alignment calculation on first scrollTo
+          _stickyGroupedListViewState!
+              .getHeaderHeightForGroup(group, forceRefresh: true);
+        } catch (e) {
+          developer.log('Error pre-measuring header for scrollTo: $e',
+              name: 'StickyGroupedListView');
+        }
+
         alignment = _stickyGroupedListViewState!
             .calculateAlignmentForElement(index, offset: offset);
       }
@@ -92,35 +107,42 @@ class GroupedItemScrollController extends ItemScrollController {
       // Schedule a correction for the next frame to fix any measurement errors
       if (automaticAlignment) {
         _scheduleScrollCorrection(index, alignment,
-            isJump: false, duration: duration, curve: curve, offset: offset);
+            isJump: false, curve: curve, offset: offset);
       }
     } finally {
       // Mark scrollTo as completed after a delay to allow for settling
-      Timer(Duration(milliseconds: duration.inMilliseconds + 100), () {
-        if (_stickyGroupedListViewState != null) {
-          _stickyGroupedListViewState!.isScrollToInProgress = false;
-        }
-      });
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (_stickyGroupedListViewState != null) {
+        _stickyGroupedListViewState!.isScrollToInProgress = false;
+      }
     }
   }
 
   /// Schedule a scroll correction to fix measurement errors from
-  /// the first scroll
+  /// the first scroll.
   void _scheduleScrollCorrection(
     int index,
     double initialAlignment, {
     required bool isJump,
-    Duration? duration,
     Curve? curve,
     double offset = 0.0,
   }) {
     // First correction after the next frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_stickyGroupedListViewState!.mounted) return;
 
-      _performScrollCorrection(index, initialAlignment,
-          isJump: isJump, duration: duration, curve: curve, offset: offset);
-    });
+    Future.delayed(
+      const Duration(milliseconds: 80),
+      () {
+        if (!_stickyGroupedListViewState!.mounted) return;
+        _performScrollCorrection(
+          index,
+          initialAlignment,
+          isJump: isJump,
+          duration: const Duration(milliseconds: 30),
+          curve: curve,
+          offset: offset,
+        );
+      },
+    );
   }
 
   void _performScrollCorrection(
@@ -145,9 +167,7 @@ class GroupedItemScrollController extends ItemScrollController {
         super.scrollTo(
           index: index * 2 + 1,
           alignment: correctedAlignment,
-          duration: Duration(
-              milliseconds: (duration.inMilliseconds * 0.3)
-                  .round()), // Shorter correction
+          duration: duration,
           curve: curve ?? Curves.easeOut,
         );
       }
@@ -158,6 +178,14 @@ class GroupedItemScrollController extends ItemScrollController {
     }
   }
 
+  /// Jumps to the element with the given [identifier].
+  ///
+  /// The element will be placed under the group header.
+  /// To set a custom [alignment],
+  /// set [automaticAlignment] to false. The [offset] parameter
+  /// allows fine-tuning
+  /// the scroll position in pixels. Negative values move the element up,
+  /// positive values move it down.
   void jumpToElement({
     required dynamic identifier,
     double alignment = 0,
@@ -172,6 +200,14 @@ class GroupedItemScrollController extends ItemScrollController {
     );
   }
 
+  /// Scrolls to the element with the given [identifier].
+  ///
+  /// The element will be placed under the group header.
+  /// To set a custom [alignment],
+  /// set [automaticAlignment] to false. The [offset] parameter allows
+  /// fine-tuning
+  /// the scroll position in pixels. Negative values move the element up,
+  /// positive values move it down.
   Future<void> scrollToElement({
     required dynamic identifier,
     required Duration duration,
@@ -192,8 +228,11 @@ class GroupedItemScrollController extends ItemScrollController {
     );
   }
 
+  /// Finds the index of the element with the given [identifier].
+  ///
+  /// Returns the index if found, otherwise -1.
   int _findIndexByIdentifier(dynamic identifier) {
-    var elements = _stickyGroupedListViewState!.sortedElements;
+    final elements = _stickyGroupedListViewState!.sortedElements;
 
     // Use cached identifier results if available
     for (int i = 0; i < elements.length; i++) {
@@ -216,11 +255,13 @@ class GroupedItemScrollController extends ItemScrollController {
     return -1;
   }
 
+  /// Attaches this controller to the given [AdvancedGroupedListViewState].
   void attachToState(AdvancedGroupedListViewState stickyGroupedListViewState) {
     assert(_stickyGroupedListViewState == null);
     _stickyGroupedListViewState = stickyGroupedListViewState;
   }
 
+  /// Detaches this controller from its [AdvancedGroupedListViewState].
   void detachFromState() {
     _stickyGroupedListViewState = null;
   }

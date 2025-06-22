@@ -1,16 +1,20 @@
-import 'package:flutter/widgets.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+part of '../advanced_grouped_list.dart';
 
-/// Extension to get the topmost visible item index or ItemPosition from ItemPositionsListener.
+/// Extension to get the topmost visible item index or ItemPosition
+/// from ItemPositionsListener.
 extension ItemPositionsListenerExt on ItemPositionsListener {
-  /// Returns the index of the topmost visible element (not separator) in the logical elements list, or null if none.
+  /// Returns the index of the topmost visible element (not separator)
+  /// in the logical elements list, or null if none.
   ///
   /// This always returns the index in the elements list (i.e., [rawIndex] ~/ 2),
   /// or null if no element is visible.
   ///
-  /// Either [minVisibility] or [minViewportOccupied] can be specified, but not both.
-  /// - [minVisibility]: Minimum fraction of the item that must be visible (0.0 to 1.0) to be considered visible
-  /// - [minViewportOccupied]: Minimum fraction of the viewport that the item must occupy (0.0 to 1.0) to be considered visible
+  /// Either [minVisibility] or [minViewportOccupied] can be specified,
+  /// but not both.
+  /// - [minVisibility]: Minimum fraction of the item that
+  /// must be visible (0.0 to 1.0) to be considered visible
+  /// - [minViewportOccupied]: Minimum fraction of the viewport that
+  /// the item must occupy (0.0 to 1.0) to be considered visible
   int? topItemIndex({
     bool reverse = false,
     double minVisibility = 0.0,
@@ -33,13 +37,18 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     return item != null ? item.index ~/ 2 : null;
   }
 
-  /// Returns the ItemPosition of the topmost visible element (not separator), or null if none is visible.
+  /// Returns the ItemPosition of the topmost visible element (not separator),
+  /// or null if none is visible.
   ///
-  /// This always returns the ItemPosition for an element (odd index), or null if no element is visible.
+  /// This always returns the ItemPosition for an element (odd index), or null
+  /// if no element is visible.
   ///
-  /// Either [minVisibility] or [minViewportOccupied] can be specified, but not both.
-  /// - [minVisibility]: Minimum fraction of the item that must be visible (0.0 to 1.0)
-  /// - [minViewportOccupied]: Minimum fraction of the viewport that the item must occupy (0.0 to 1.0)
+  /// Either [minVisibility] or [minViewportOccupied] can be specified,
+  /// but not both.
+  /// - [minVisibility]: Minimum fraction of the item
+  /// that must be visible (0.0 to 1.0)
+  /// - [minViewportOccupied]: Minimum fraction of the viewport
+  /// that the item must occupy (0.0 to 1.0)
   ItemPosition? topItem({
     bool reverse = false,
     double minVisibility = 0.0,
@@ -61,14 +70,18 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     );
   }
 
-  /// Returns the index of the topmost visible separator in the widget list, or null if none.
+  /// Returns the index of the topmost visible separator in the widget list,
+  /// or null if none.
   ///
   /// This always returns the index in the separators list (i.e., [rawIndex] ~/ 2),
   /// or null if the topmost visible item is not a separator.
   ///
-  /// Either [minVisibility] or [minViewportOccupied] can be specified, but not both.
-  /// - [minVisibility]: Minimum fraction of the item that must be visible (0.0 to 1.0)
-  /// - [minViewportOccupied]: Minimum fraction of the viewport that the item must occupy (0.0 to 1.0)
+  /// Either [minVisibility] or [minViewportOccupied] can be specified,
+  /// but not both.
+  /// - [minVisibility]: Minimum fraction of the item
+  /// that must be visible (0.0 to 1.0)
+  /// - [minViewportOccupied]: Minimum fraction of the viewport
+  /// that the item must occupy (0.0 to 1.0)
   int? topSeparatorIndex({
     bool reverse = false,
     double minVisibility = 0.0,
@@ -96,13 +109,18 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     return null;
   }
 
-  /// Returns the ItemPosition of the last visible element (not separator), or null if none is visible.
+  /// Returns the ItemPosition of the last visible element (not separator),
+  /// or null if none is visible.
   ///
-  /// This always returns the ItemPosition for an element (odd index), or null if no element is visible.
+  /// This always returns the ItemPosition for an element (odd index),
+  /// or null if no element is visible.
   ///
-  /// Either [minVisibility] or [minViewportOccupied] can be specified, but not both.
-  /// - [minVisibility]: Minimum fraction of the item that must be visible (0.0 to 1.0) to be considered visible
-  /// - [minViewportOccupied]: Minimum fraction of the viewport that the item must occupy (0.0 to 1.0) to be considered visible
+  /// Either [minVisibility] or [minViewportOccupied] can be specified,
+  /// but not both.
+  /// - [minVisibility]: Minimum fraction of the item
+  /// that must be visible (0.0 to 1.0) to be considered visible
+  /// - [minViewportOccupied]: Minimum fraction of the viewport
+  /// that the item must occupy (0.0 to 1.0) to be considered visible
   ItemPosition? lastItem({
     bool reverse = false,
     double minVisibility = 0.0,
@@ -124,14 +142,18 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     );
   }
 
-  /// Returns the index of the last visible element (not separator) in the logical elements list, or null if none.
+  /// Returns the index of the last visible element (not separator) in the
+  /// logical elements list, or null if none.
   ///
   /// This always returns the index in the elements list (i.e., [rawIndex] ~/ 2),
   /// or null if no element is visible.
   ///
-  /// Either [minVisibility] or [minViewportOccupied] can be specified, but not both.
-  /// - [minVisibility]: Minimum fraction of the item that must be visible (0.0 to 1.0) to be considered visible
-  /// - [minViewportOccupied]: Minimum fraction of the viewport that the item must occupy (0.0 to 1.0) to be considered visible
+  /// Either [minVisibility] or [minViewportOccupied] can be specified,
+  /// but not both.
+  /// - [minVisibility]: Minimum fraction of the item
+  /// that must be visible (0.0 to 1.0) to be considered visible
+  /// - [minViewportOccupied]: Minimum fraction of the viewport
+  /// that the item must occupy (0.0 to 1.0) to be considered visible
   int? lastItemIndex({
     bool reverse = false,
     double minVisibility = 0.0,
@@ -154,7 +176,8 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     return item != null ? item.index ~/ 2 : null;
   }
 
-  /// Internal implementation for finding the topmost visible element (odd index).
+  /// Internal implementation for finding the topmost visible element
+  /// (odd index).
   ItemPosition? _getTopVisibleElement({
     bool reverse = false,
     double minVisibility = 0.0,
@@ -172,7 +195,8 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     // Only consider elements (odd indices)
     final elementPositions = positions.where((pos) => pos.index % 2 == 1);
     if (elementPositions.isEmpty) return null;
-    // Use the same logic as _getTopVisibleItem for filtering and picking the topmost
+    // Use the same logic as _getTopVisibleItem for filtering and picking
+    // the topmost
     final visible = elementPositions.where((pos) {
       final isTrailingVisible = pos.itemTrailingEdge > 0;
       final isLeadingVisible = pos.itemLeadingEdge < 1;
@@ -283,7 +307,8 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     // Only consider elements (odd indices)
     final elementPositions = positions.where((pos) => pos.index % 2 == 1);
     if (elementPositions.isEmpty) return null;
-    // Use the same logic as _getTopVisibleElement for filtering and picking the last visible
+    // Use the same logic as _getTopVisibleElement for filtering and picking
+    // the last visible
     final visible = elementPositions.where((pos) {
       final isTrailingVisible = pos.itemTrailingEdge > 0;
       final isLeadingVisible = pos.itemLeadingEdge < 1;
@@ -322,7 +347,8 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
     } else {
       useMinLeadingEdge = reverse;
     }
-    // For the last visible element, find the maximum or minimum leadingEdge depending on direction
+    // For the last visible element, find the maximum or minimum leadingEdge
+    // depending on direction
     return visible.reduce((candidate, pos) {
       if (!useMinLeadingEdge) {
         // Normal: maximum leadingEdge is the last one
@@ -414,7 +440,8 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
 
     if (visible.isEmpty) return null;
 
-    // Determine which edge to use for comparison based on scroll direction and settings
+    // Determine which edge to use for comparison based on scroll direction
+    // and settings
     bool useTrailingEdge = true;
     if (scrollDirection == Axis.horizontal) {
       // For horizontal lists, adjust based on text direction and reverse
@@ -430,9 +457,11 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
       if (useTrailingEdge) {
         // Use trailing edge (default for top-to-bottom/LTR lists)
         if (pos.itemTrailingEdge < candidate.itemTrailingEdge) return pos;
-        // If equal trailing edges, use index as tiebreaker (lower index = higher in list)
+        // If equal trailing edges, use index as tiebreaker
+        // (lower index = higher in list)
         if (pos.itemTrailingEdge == candidate.itemTrailingEdge) {
-          // If items have same trailing edge, prefer the one with more visibility
+          // If items have same trailing edge, prefer the one with
+          // more visibility
           final candidateVisibility =
               (candidate.itemTrailingEdge.clamp(0.0, 1.0) -
                       candidate.itemLeadingEdge.clamp(0.0, 1.0))
@@ -453,7 +482,8 @@ extension ItemPositionsListenerExt on ItemPositionsListener {
         if (pos.itemLeadingEdge > candidate.itemLeadingEdge) return pos;
         // If equal leading edges, apply similar tiebreaking logic
         if (pos.itemLeadingEdge == candidate.itemLeadingEdge) {
-          // If items have same leading edge, prefer the one with more visibility
+          // If items have same leading edge, prefer the one
+          // with more visibility
           final candidateVisibility =
               (candidate.itemTrailingEdge.clamp(0.0, 1.0) -
                       candidate.itemLeadingEdge.clamp(0.0, 1.0))

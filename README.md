@@ -13,7 +13,8 @@ This package is originally based on the excellent work from [Dimibe/sticky_group
 - Added `onGroupChanged` callback to `StickyGroupedListView` for tracking group changes during scrolling.
 - `groupSeparatorBuilder` is now an optional parameter, allowing for more flexible usage.
 - Extended `ItemPositionsListener` with `topItemIndex` and `lastItemIndex` support for advanced scroll tracking.
-- Improved performance and added comprehensive tests for all major features.
+- Improved performance.
+- Variable item and group separator heights now supported.
 
 ---
 

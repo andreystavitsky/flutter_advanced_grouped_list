@@ -57,7 +57,7 @@ class _ToggleStickyHeaderExampleState extends State<ToggleStickyHeaderExample> {
             _buildGroupSeparator(element),
         itemBuilder: (context, Element element) => _buildItem(element),
         showStickyHeader: _showStickyHeader,
-        order: AdvancedGroupedListOrder.ASC,
+        order: AdvancedGroupedListOrder.asc,
       ),
     );
   }

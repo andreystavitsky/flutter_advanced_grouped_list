@@ -1,3 +1,9 @@
 /// Used to define the order of a [StickyGroupedListView].
-// ignore: constant_identifier_names
-enum AdvancedGroupedListOrder { ASC, DESC }
+/// Defines the order in which items are grouped in a [StickyGroupedListView].
+enum AdvancedGroupedListOrder {
+  /// Ascending order.
+  asc,
+
+  /// Descending order.
+  desc,
+}

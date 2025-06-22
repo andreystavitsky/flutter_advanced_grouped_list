@@ -1,1 +1,26 @@
 include: package:flutter_lints/flutter.yaml
+linter:
+  rules:
+    # ERROR RULES
+    # Style
+    avoid_print: true
+    prefer_single_quotes: true
+    prefer_double_quotes: false # Conflicts with prefer_single_quotes
+    always_use_package_imports: true
+    avoid_relative_lib_imports: true
+    package_prefixed_library_names: true
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    unnecessary_new: true
+    unnecessary_const: true
+    unnecessary_this: true
+    # Documentation
+    public_member_api_docs: true # Enforce for public APIs as per spec
+    # Pub
+    sort_pub_dependencies: true
+
+    # WARNING RULES
+    # Style
+    lines_longer_than_80_chars: true # Good for readability

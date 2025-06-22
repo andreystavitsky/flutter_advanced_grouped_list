@@ -1,8 +1,8 @@
 name: advanced_grouped_list
 description: A ScrollablePositionedList where the list items can be grouped into sections.
-version: 1.0.0+1
-homepage: https://github.com/andreystavitsky/fluter_advanced_grouped_list
-repository: https://github.com/andreystavitsky/fluter_advanced_grouped_list
+version: 1.0.1
+homepage: https://github.com/andreystavitsky/flutter_advanced_grouped_list
+repository: https://github.com/andreystavitsky/flutter_advanced_grouped_list
 
 environment:
   sdk: ">=2.17.0 <4.0.0"
@@ -11,10 +11,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  scrollable_positioned_list: ^0.3.8
   meta: ^1.9.1
+  scrollable_positioned_list: ^0.3.8
+  
 
 dev_dependencies:
+  flutter_lints: ">=2.0.3 <=6.0.0"
   flutter_test:
     sdk: flutter
-  flutter_lints: ">=2.0.3 <=5.0.0"
+  

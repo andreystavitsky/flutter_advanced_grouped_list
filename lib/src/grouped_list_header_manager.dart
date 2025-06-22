@@ -1,15 +1,18 @@
-part of 'advanced_grouped_list.dart';
+part of 'advanced_grouped_list_library.dart';
 
 /// Manages header-related operations for the grouped list view
 class GroupedListHeaderManager<T, E> {
+  /// Caches header dimensions and related data for grouped list performance.
   final GroupedListCacheManager<T, E> cacheManager;
   final GlobalKey _groupHeaderKey = GlobalKey();
 
   RenderBox? _headerBox;
   RenderBox? _listBox;
 
+  /// Creates a [GroupedListHeaderManager] with the given [cacheManager].
   GroupedListHeaderManager(this.cacheManager);
 
+  /// Returns the [GlobalKey] associated with the group header.
   GlobalKey get groupHeaderKey => _groupHeaderKey;
 
   /// Calculate the header height for a specific group
@@ -71,7 +74,7 @@ class GroupedListHeaderManager<T, E> {
     }
 
     // Use widget estimation
-    Widget separatorWidget = groupSeparatorBuilder(groupElement);
+    final Widget separatorWidget = groupSeparatorBuilder(groupElement);
     double estimatedHeight = _estimateWidgetHeight(separatorWidget);
 
     // If we have other cached headers, use them for better estimation
@@ -180,7 +183,7 @@ class GroupedListHeaderManager<T, E> {
     BuildContext context,
     E currentGroup,
   ) {
-    Widget headerWidget = Container(
+    final Widget headerWidget = Container(
       key: _groupHeaderKey,
       color: floatingHeader ? null : stickyHeaderBackgroundColor,
       width: floatingHeader ? null : MediaQuery.of(context).size.width,

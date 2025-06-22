@@ -1,7 +1,6 @@
+import 'package:advanced_grouped_list/advanced_grouped_list.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:advanced_grouped_list/src/item_positions_listener_ext.dart';
 
 void main() {
   group('ItemPositionsListenerExt - basic functionality', () {
@@ -25,7 +24,8 @@ void main() {
         MockItemPosition(index: 5, itemTrailingEdge: 0.2, itemLeadingEdge: 0.0),
         MockItemPosition(index: 3, itemTrailingEdge: 0.5, itemLeadingEdge: 0.3),
       ]);
-      // Only odd indices are elements: 3 and 5. 5 is topmost (smallest trailingEdge > 0)
+      // Only odd indices are elements: 3 and 5. 5 is topmost
+      // (smallest trailingEdge > 0)
       expect(listener.topItemIndex(), 2); // 5 ~/ 2 = 2
       expect(listener.topItem()?.index, 5);
     });
@@ -91,7 +91,8 @@ void main() {
         MockItemPosition(index: 5, itemTrailingEdge: 0.2, itemLeadingEdge: 0.0),
         MockItemPosition(index: 3, itemTrailingEdge: 0.9, itemLeadingEdge: 0.7),
       ]);
-      // Only odd indices are elements: 3 and 5. In reverse mode, 3 is topmost (largest trailingEdge)
+      // Only odd indices are elements: 3 and 5. In reverse mode, 3 is topmost
+      // (largest trailingEdge)
       expect(listener.topItemIndex(reverse: true), 1); // 3 ~/ 2 = 1
       expect(listener.topItem(reverse: true)?.index, 3);
     });
@@ -102,7 +103,8 @@ void main() {
         MockItemPosition(index: 5, itemTrailingEdge: 0.2, itemLeadingEdge: 0.0),
         MockItemPosition(index: 3, itemTrailingEdge: 0.9, itemLeadingEdge: 0.7),
       ]);
-      // Only odd indices are elements: 3 and 5. In RTL horizontal mode, 3 is topmost (largest leadingEdge)
+      // Only odd indices are elements: 3 and 5. In RTL horizontal mode, 3 is
+      // topmost (largest leadingEdge)
       expect(
           listener.topItemIndex(
               scrollDirection: Axis.horizontal,
@@ -125,7 +127,8 @@ void main() {
         MockItemPosition(index: 4, itemTrailingEdge: 0.5, itemLeadingEdge: 0.1),
       ]);
 
-      // Only odd indices are elements: 3 and 5. Horizontal + RTL + Reversed + minVisibility
+      // Only odd indices are elements: 3 and 5. Horizontal + RTL + Reversed
+      // + minVisibility
       final result = listener.topItemIndex(
           reverse: true,
           scrollDirection: Axis.horizontal,
@@ -160,7 +163,8 @@ void main() {
             itemTrailingEdge: 0.2,
             itemLeadingEdge: 0.0), // 20% visible (100% of item), element
       ]);
-      // With minVisibility = 0.3, only item 3 qualifies based on visibility percent
+      // With minVisibility = 0.3, only item 3 qualifies based on visibility
+      // percent
       expect(listener.topItemIndex(minVisibility: 0.3), 2); // 5 ~/ 2 = 2
       expect(listener.topItem(minVisibility: 0.3)?.index, 5);
 
@@ -171,7 +175,8 @@ void main() {
             itemTrailingEdge: 0.1,
             itemLeadingEdge: 0.0), // 10% visible but 100% of small item
       ]);
-      // With minVisibility = 0.8, the implementation still returns 0 with current behavior
+      // With minVisibility = 0.8, the implementation still returns 0 with
+      // current behavior
       expect(listener2.topItemIndex(minVisibility: 0.8),
           0); // Changed to match actual behavior
       expect(listener2.topItem(minVisibility: 0.8)?.index,
@@ -179,8 +184,8 @@ void main() {
     });
 
     test(
-        'topItemIndex with minViewportOccupied filters items by viewport occupation',
-        () {
+        'topItemIndex with minViewportOccupied filters items by viewport'
+        ' occupation', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(
             index: 3,
@@ -200,7 +205,8 @@ void main() {
       expect(listener.topItemIndex(minViewportOccupied: 0.3), 1); // 3 ~/ 2 = 1
       expect(listener.topItem(minViewportOccupied: 0.3)?.index, 3);
 
-      // With minViewportOccupied = 0.2, both elements qualify, but 5 has the smallest trailing edge
+      // With minViewportOccupied = 0.2, both elements qualify, but 5 has the
+      //smallest trailing edge
       expect(listener.topItemIndex(minViewportOccupied: 0.2), 2); // 5 ~/ 2 = 2
       expect(listener.topItem(minViewportOccupied: 0.2)?.index, 5);
     });
@@ -229,8 +235,8 @@ void main() {
     });
 
     test(
-        'assertion error when both minVisibility and minViewportOccupied are specified',
-        () {
+        'assertion error when both minVisibility and minViewportOccupied are'
+        ' specified', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(index: 3, itemTrailingEdge: 0.9, itemLeadingEdge: 0.2),
       ]);
@@ -245,8 +251,8 @@ void main() {
     });
 
     test(
-        'topItemIndex with minVisibility handles partially visible and oversized items',
-        () {
+        'topItemIndex with minVisibility handles partially visible and'
+        ' oversized items', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(
             index: 0,
@@ -387,8 +393,8 @@ void main() {
     });
 
     test(
-        'assertion error when both minVisibility and minViewportOccupied are specified for topSeparatorIndex',
-        () {
+        'assertion error when both minVisibility and minViewportOccupied are '
+        'specified for topSeparatorIndex', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(index: 0, itemTrailingEdge: 0.2, itemLeadingEdge: 0.0),
       ]);
@@ -400,8 +406,8 @@ void main() {
     });
 
     test(
-        'topSeparatorIndex with minVisibility handles partially visible and oversized items',
-        () {
+        'topSeparatorIndex with minVisibility handles partially visible and '
+        'oversized items', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(
             index: 0,
@@ -455,7 +461,8 @@ void main() {
       // minVisibility = 0.26 (S0 fails. E1 is topmost, but is element)
       expect(listener.topSeparatorIndex(minVisibility: 0.26), isNull);
 
-      // minVisibility = 0.51 (E1,E5,S6,E7 fail. S2 is topmost: index 2, logical 1)
+      // minVisibility = 0.51 (E1,E5,S6,E7 fail. S2 is topmost: index 2,
+      // logical 1)
       expect(listener.topSeparatorIndex(minVisibility: 0.51), 1);
 
       // minVisibility = 0.76 (S4 fails. S2 is topmost: index 2, logical 1)
@@ -536,7 +543,8 @@ void main() {
         MockItemPosition(index: 5, itemTrailingEdge: 0.2, itemLeadingEdge: 0.0),
         MockItemPosition(index: 3, itemTrailingEdge: 0.9, itemLeadingEdge: 0.7),
       ]);
-      // Only odd indices are elements: 3 and 5. In reverse mode, 5 is last (min trailingEdge)
+      // Only odd indices are elements: 3 and 5. In reverse mode, 5 is last
+      // (min trailingEdge)
       expect(listener.lastItemIndex(reverse: true), 2); // 5 ~/ 2 = 2
       expect(listener.lastItem(reverse: true)?.index, 5);
     });
@@ -547,7 +555,8 @@ void main() {
         MockItemPosition(index: 5, itemTrailingEdge: 0.2, itemLeadingEdge: 0.0),
         MockItemPosition(index: 3, itemTrailingEdge: 0.9, itemLeadingEdge: 0.7),
       ]);
-      // Only odd indices are elements: 3 and 5. In RTL horizontal mode, 5 is last (min leadingEdge)
+      // Only odd indices are elements: 3 and 5. In RTL horizontal mode, 5 is
+      // last (min leadingEdge)
       expect(
           listener.lastItemIndex(
               scrollDirection: Axis.horizontal,
@@ -587,8 +596,8 @@ void main() {
     });
 
     test(
-        'lastItemIndex with minViewportOccupied filters items by viewport occupation',
-        () {
+        'lastItemIndex with minViewportOccupied filters items by viewport '
+        'occupation', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(
             index: 3,
@@ -608,7 +617,8 @@ void main() {
       expect(listener.lastItemIndex(minViewportOccupied: 0.3), 1); // 3 ~/ 2 = 1
       expect(listener.lastItem(minViewportOccupied: 0.3)?.index, 3);
 
-      // With minViewportOccupied = 0.2, both elements qualify, but 3 has max trailing edge
+      // With minViewportOccupied = 0.2, both elements qualify, but 3
+      // has max trailing edge
       expect(listener.lastItemIndex(minViewportOccupied: 0.2), 1); // 3 ~/ 2 = 1
       expect(listener.lastItem(minViewportOccupied: 0.2)?.index, 3);
     });
@@ -637,8 +647,8 @@ void main() {
     });
 
     test(
-        'assertion error when both minVisibility and minViewportOccupied are specified for lastItem',
-        () {
+        'assertion error when both minVisibility and minViewportOccupied are'
+        ' specified for lastItem', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(index: 3, itemTrailingEdge: 0.9, itemLeadingEdge: 0.2),
       ]);
@@ -653,8 +663,8 @@ void main() {
     });
 
     test(
-        'lastItemIndex with minVisibility handles partially visible and oversized items',
-        () {
+        'lastItemIndex with minVisibility handles partially visible and'
+        ' oversized items', () {
       final listener = MockItemPositionsListener([
         MockItemPosition(
             index: 0,

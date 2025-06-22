@@ -2,11 +2,11 @@ changelog:
   categories:
     - title: 🏕 Features
       labels:
-        - new feature
-        - improvement
+        - feat
+        - refactor
     - title: 🐛 Bug Fixes
       labels:
-          - bug
+          - fix
     - title: 👒 Dependencies
       labels:
         - dependencies

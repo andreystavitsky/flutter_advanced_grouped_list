@@ -1,9 +1,14 @@
-part of 'advanced_grouped_list.dart';
+part of 'advanced_grouped_list_library.dart';
 
 /// Manages position and scroll operations for the grouped list view
 class GroupedListPositionManager<T, E> {
+  /// The cache manager for grouped list data
   final GroupedListCacheManager<T, E> cacheManager;
+
+  /// The header manager for grouped list headers
   final GroupedListHeaderManager<T, E> headerManager;
+
+  /// The element manager for grouped list elements
   final GroupedListElementManager<T, E> elementManager;
 
   final StreamController<int> _streamController =
@@ -14,13 +19,26 @@ class GroupedListPositionManager<T, E> {
   /// caching inaccurate measurements
   bool isScrollToInProgress = false;
 
+  /// Creates a [GroupedListPositionManager] with the required managers.
   GroupedListPositionManager(
       this.cacheManager, this.headerManager, this.elementManager);
 
+  /// A stream that emits the index of the top element when it changes.
   Stream<int> get stream => _streamController.stream;
+
+  /// The index of the topmost visible element.
   int get topElementIndex => _topElementIndex;
 
-  /// Position listener for tracking scroll position
+  /// Position listener for tracking scroll position.
+  ///
+  /// [listener] is the item positions listener.
+  /// [sortedElements] is the list of sorted elements.
+  /// [groupByFunction] is the function to group elements.
+  /// [isSeparator] is an optional function to check if an index is a separator.
+  /// [reverse] indicates if the list is reversed.
+  /// [onGroupChanged] is an optional callback for group changes.
+  /// [hasCustomGroupBy] indicates if a custom groupBy is used.
+  /// [context] is the build context.
   void positionListener(
     ItemPositionsListener listener,
     List<T> sortedElements,
@@ -44,8 +62,8 @@ class GroupedListPositionManager<T, E> {
     }
 
     if (group.isNotEmpty) {
-      ItemPosition currentItem = group.reduce(reducePositions);
-      int index = currentItem.index ~/ 2;
+      final ItemPosition currentItem = group.reduce(reducePositions);
+      final int index = currentItem.index ~/ 2;
 
       if (_topElementIndex != index) {
         if (index < 0 || index >= sortedElements.length) {
@@ -56,12 +74,12 @@ class GroupedListPositionManager<T, E> {
 
         // Use cached groupBy results if available, otherwise fallback
         // to direct call
-        E curr = hasCustomGroupBy && cacheManager.groupByCache.isNotEmpty
+        final E curr = hasCustomGroupBy && cacheManager.groupByCache.isNotEmpty
             ? cacheManager.getCachedGroupBy(
                 sortedElements[index], groupByFunction)
             : groupByFunction(sortedElements[index]);
 
-        E prev = index >= 0 &&
+        final E prev = index >= 0 &&
                 _topElementIndex >= 0 &&
                 _topElementIndex < sortedElements.length
             ? (hasCustomGroupBy && cacheManager.groupByCache.isNotEmpty
@@ -87,7 +105,10 @@ class GroupedListPositionManager<T, E> {
     }
   }
 
-  /// Update header cache based on current measurements
+  /// Update header cache based on current measurements.
+  ///
+  /// [currentGroup] is the current group key.
+  /// [headerDimension] is the measured header dimension.
   void _updateHeaderCache(E currentGroup, double? headerDimension) {
     if (headerDimension != null &&
         headerDimension > 0 &&
@@ -99,7 +120,12 @@ class GroupedListPositionManager<T, E> {
     }
   }
 
-  /// Returns the index of the topmost visible element (not separator)
+  /// Returns the index of the topmost visible element (not separator).
+  ///
+  /// [listener] is the item positions listener.
+  /// [sortedElements] is the list of sorted elements.
+  /// [isSeparator] is an optional function to check if an index is a separator.
+  /// [reverse] indicates if the list is reversed.
   int? getTopVisibleElementIndex(
     ItemPositionsListener listener,
     List<T> sortedElements,
@@ -147,12 +173,16 @@ class GroupedListPositionManager<T, E> {
     }
   }
 
-  /// Set scroll operation state
+  /// Set scroll operation state.
+  ///
+  /// [inProgress] indicates if a scroll operation is in progress.
   void setScrollToInProgress(bool inProgress) {
     isScrollToInProgress = inProgress;
   }
 
-  /// Update top element index
+  /// Update top element index.
+  ///
+  /// [index] is the new top element index.
   void updateTopElementIndex(int index) {
     if (_topElementIndex != index) {
       _topElementIndex = index;
@@ -160,7 +190,7 @@ class GroupedListPositionManager<T, E> {
     }
   }
 
-  /// Dispose resources
+  /// Dispose resources used by this manager.
   void dispose() {
     _streamController.close();
   }

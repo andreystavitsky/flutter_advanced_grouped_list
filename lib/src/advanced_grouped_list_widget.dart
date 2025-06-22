@@ -1,4 +1,4 @@
-part of 'advanced_grouped_list.dart';
+part of 'advanced_grouped_list_library.dart';
 
 /// A groupable list of widgets similar to [ScrollablePositionedList], except
 /// that the items can be sectioned into groups.
@@ -163,7 +163,7 @@ class AdvancedGroupedListView<T, E> extends StatefulWidget {
     this.indexedItemBuilder,
     this.itemComparator,
     this.elementIdentifier,
-    this.order = AdvancedGroupedListOrder.ASC,
+    this.order = AdvancedGroupedListOrder.asc,
     this.separator = const SizedBox.shrink(),
     this.floatingHeader = false,
     this.stickyHeaderBackgroundColor = const Color(0xffF7F7F7),

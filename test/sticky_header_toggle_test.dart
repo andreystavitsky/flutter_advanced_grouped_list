@@ -27,7 +27,8 @@ void main() {
       ),
     );
 
-    // Initially, sticky header should be visible (SizedBox.shrink is used when not showing)
+    // Initially, sticky header should be visible (SizedBox.shrink is used
+    // when not showing)
     expect(find.text('Team A', skipOffstage: false),
         findsNWidgets(2)); // One for regular list, one for sticky header
 
@@ -55,7 +56,8 @@ void main() {
       await tester.tap(find.byType(ElevatedButton));
       await tester.pumpAndSettle();
 
-      // Final state should match button presses (true after even number of toggles)
+      // Final state should match button presses (true after even number
+      // of toggles)
       expect(find.text('Team A', skipOffstage: false), findsNWidgets(2));
     } catch (e) {
       // If we get an error, it confirms the issue exists

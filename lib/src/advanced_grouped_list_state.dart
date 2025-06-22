@@ -1,36 +1,58 @@
-part of 'advanced_grouped_list.dart';
+part of 'advanced_grouped_list_library.dart';
 
+/// State class for [AdvancedGroupedListView].
+///
+/// Manages the internal state, caching, and controller logic for
+/// the grouped list view.
 class AdvancedGroupedListViewState<T, E>
     extends State<AdvancedGroupedListView<T, E>> {
-  /// Used within [GroupedItemScrollController].
+  /// The sorted list of elements, used within [GroupedItemScrollController].
   @protected
   List<T> sortedElements = [];
 
-  /// Used within [GroupedItemScrollController].
+  /// The current header dimension, used within [GroupedItemScrollController].
   @protected
   double? headerDimension;
 
+  /// Listener for item positions in the list.
   late ItemPositionsListener _listener;
+
+  /// Controller for grouped item scrolling.
   late GroupedItemScrollController _controller;
+
+  /// Function to determine if an index is a separator.
   bool Function(int)? _isSeparator;
 
   // Managers for different aspects of functionality
+  /// Cache manager for group and element data.
   late GroupedListCacheManager<T, E> _cacheManager;
+
+  /// Manager for group header logic.
   late GroupedListHeaderManager<T, E> _headerManager;
+
+  /// Manager for element-related logic.
   late GroupedListElementManager<T, E> _elementManager;
+
+  /// Manager for position and scroll logic.
   late GroupedListPositionManager<T, E> _positionManager;
 
   // Getters for controller access
+  /// Returns the cache of element identifiers.
   Map<T, dynamic> get elementIdentifierCache =>
       _cacheManager.elementIdentifierCache;
+
+  /// Returns whether a scroll-to operation is in progress.
   bool get isScrollToInProgress => _positionManager.isScrollToInProgress;
 
   // Setter for scroll controller
+  /// Sets whether a scroll-to operation is in progress.
   set isScrollToInProgress(bool value) {
     _positionManager.setScrollToInProgress(value);
   }
 
-  // Default groupBy: all elements in one group, safe for any E (throws for non-nullable types)
+  // Default groupBy: all elements in one group, safe for any E
+  // (throws for non-nullable types)
+  /// Default groupBy function: returns null for nullable E, otherwise throws.
   E _defaultGroupBy(T element) {
     // If E is nullable, return null as E
     if (null is E) return null as E;
@@ -44,6 +66,7 @@ class AdvancedGroupedListViewState<T, E>
   }
 
   // Default groupSeparatorBuilder: no separator
+  /// Default group separator builder: returns an empty widget.
   Widget _defaultGroupSeparatorBuilder(T element) => const SizedBox.shrink();
 
   @override
@@ -118,7 +141,7 @@ class AdvancedGroupedListViewState<T, E>
           sortedElements, groupBy, widget.elementIdentifier);
     }
 
-    var hiddenIndex = widget.reverse ? sortedElements.length * 2 - 1 : 0;
+    final hiddenIndex = widget.reverse ? sortedElements.length * 2 - 1 : 0;
     _isSeparator = widget.reverse ? (int i) => i.isOdd : (int i) => i.isEven;
 
     return Stack(
@@ -144,7 +167,7 @@ class AdvancedGroupedListViewState<T, E>
           addSemanticIndexes: widget.addSemanticIndexes,
           shrinkWrap: widget.shrinkWrap,
           itemBuilder: (context, index) {
-            int actualIndex = index ~/ 2;
+            final int actualIndex = index ~/ 2;
 
             if (index == hiddenIndex) {
               if (widget.showStickyHeader == true) {
@@ -158,7 +181,7 @@ class AdvancedGroupedListViewState<T, E>
             }
 
             if (_isSeparator!(index)) {
-              int prevIndex = actualIndex + (widget.reverse ? 1 : -1);
+              final int prevIndex = actualIndex + (widget.reverse ? 1 : -1);
               if (prevIndex < 0 || prevIndex >= sortedElements.length) {
                 return widget.separator;
               }
@@ -195,11 +218,11 @@ class AdvancedGroupedListViewState<T, E>
                     return _showFixedGroupHeader(
                         snapshot.data!, groupSeparatorBuilder);
                   } else {
-                    return SizedBox.shrink();
+                    return const SizedBox.shrink();
                   }
                 },
               )
-            : SizedBox.shrink(),
+            : const SizedBox.shrink(),
       ],
     );
   }
@@ -211,6 +234,7 @@ class AdvancedGroupedListViewState<T, E>
         _listener, sortedElements, _isSeparator, widget.reverse);
   }
 
+  /// Builds the item widget for the given index.
   Widget _buildItem(context, int actualIndex) {
     if (actualIndex < 0 || actualIndex >= sortedElements.length) {
       developer.log('actualIndex $actualIndex out of bounds for sortedElements',
@@ -223,7 +247,8 @@ class AdvancedGroupedListViewState<T, E>
             context, sortedElements[actualIndex], actualIndex);
   }
 
-  _positionListener() {
+  /// Listener for position changes in the list.
+  void _positionListener() {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     headerDimension = _headerManager.getCurrentHeaderDimension();
 
@@ -239,21 +264,21 @@ class AdvancedGroupedListViewState<T, E>
     );
   }
 
-  /// Get the group for a given element index (optimized with cache)
+  /// Get the group for a given element index (optimized with cache).
   E getGroupForElementIndex(int elementIndex) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _elementManager.getGroupForElementIndex(
         elementIndex, sortedElements, groupBy);
   }
 
-  /// Find the index of the first element in the specified group
+  /// Find the index of the first element in the specified group.
   int getFirstElementIndexForGroup(E group) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _elementManager.getFirstElementIndexForGroup(
         group, sortedElements, groupBy);
   }
 
-  /// Find the list index of the group header for the specified group
+  /// Find the list index of the group header for the specified group.
   int getGroupHeaderIndexForGroup(E group) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _elementManager.getGroupHeaderIndexForGroup(
@@ -261,7 +286,7 @@ class AdvancedGroupedListViewState<T, E>
   }
 
   /// Find the list index of the group header for the group that contains
-  /// the element at the given index
+  /// the element at the given index.
   int getGroupHeaderIndexForElementIndex(int elementIndex) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _elementManager.getGroupHeaderIndexForElementIndex(
@@ -269,7 +294,7 @@ class AdvancedGroupedListViewState<T, E>
   }
 
   /// Find the list index of the group header for the group that contains
-  /// the element with the given identifier
+  /// the element with the given identifier.
   int getGroupHeaderIndexForGroupByIdentifier(dynamic identifier) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _elementManager.getGroupHeaderIndexForGroupByIdentifier(
@@ -277,19 +302,20 @@ class AdvancedGroupedListViewState<T, E>
   }
 
   /// Find the index of the first element of the group that contains
-  /// the element with the given identifier
+  /// the element with the given identifier.
   int getFirstElementIndexForGroupByIdentifier(dynamic identifier) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _elementManager.getFirstElementIndexForGroupByIdentifier(
         identifier, sortedElements, groupBy, widget.elementIdentifier);
   }
 
-  /// Check if a group exists in the current elements (optimized O(1))
+  /// Check if a group exists in the current elements (optimized O(1)).
   bool groupExists(E group) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _elementManager.groupExists(group, sortedElements, groupBy);
   }
 
+  /// Builds the fixed group header widget for the sticky header.
   Widget _showFixedGroupHeader(
       int index, Widget Function(T) groupSeparatorBuilder) {
     if (widget.elements.isNotEmpty && index < sortedElements.length) {
@@ -318,7 +344,7 @@ class AdvancedGroupedListViewState<T, E>
     return _elementManager.getIdentifier(element, widget.elementIdentifier!);
   }
 
-  /// Calculate the header height for a specific group
+  /// Calculate the header height for a specific group.
   double getHeaderHeightForGroup(E group, {bool forceRefresh = false}) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     final groupSeparatorBuilder =
@@ -337,7 +363,7 @@ class AdvancedGroupedListViewState<T, E>
     );
   }
 
-  /// Force refresh of current header dimensions
+  /// Force refresh of current header dimensions.
   void refreshCurrentHeaderDimensions() {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     _headerManager.refreshCurrentHeaderDimensions(
@@ -349,7 +375,7 @@ class AdvancedGroupedListViewState<T, E>
     headerDimension = _headerManager.getCurrentHeaderDimension();
   }
 
-  /// Calculate proper alignment for scrollTo/jumpTo operations
+  /// Calculate proper alignment for scrollTo/jumpTo operations.
   double calculateAlignmentForElement(int elementIndex, {double offset = 0.0}) {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
     return _headerManager.calculateAlignmentForElement(

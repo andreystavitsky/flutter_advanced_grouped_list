@@ -46,8 +46,8 @@ void main() {
     });
 
     testWidgets(
-        'assertion error when onGroupChanged is provided without groupSeparatorBuilder',
-        (WidgetTester tester) async {
+        'assertion error when onGroupChanged is provided without '
+        'groupSeparatorBuilder', (WidgetTester tester) async {
       expect(
         () => AdvancedGroupedListView<Map<String, String>, String>(
           elements: elements,
@@ -78,7 +78,8 @@ void main() {
                 child: ListTile(title: Text(element['name']!)),
               ),
               onGroupChanged: (group) {
-                // Just mark that it was called, but don't actually validate values
+                // Just mark that it was called, but don't actually
+                // validate values
                 // to avoid flaky tests
                 callbackCalled = true;
               },
@@ -90,7 +91,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // At this point, the test has confirmed that:
-      // 1. The StickyGroupedListView widget can be built with an onGroupChanged callback
+      // 1. The StickyGroupedListView widget can be built with an
+      // onGroupChanged callback
       // 2. The widget doesn't crash when rendered
       //
       // We're not testing the actual callback invocation in this test
@@ -206,7 +208,7 @@ void main() {
                 callbackCalled = true;
               },
               // Use descending order
-              order: AdvancedGroupedListOrder.DESC,
+              order: AdvancedGroupedListOrder.desc,
             ),
           ),
         ),

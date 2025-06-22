@@ -25,7 +25,7 @@ void main() {
           body: AdvancedGroupedListView(
             groupBy: (dynamic element) => element['group'],
             elements: _elements,
-            order: AdvancedGroupedListOrder.DESC,
+            order: AdvancedGroupedListOrder.desc,
             groupSeparatorBuilder: buildGroupSeperator,
             itemBuilder: (context, dynamic element) => Text(element['name']),
           ),
@@ -69,7 +69,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text("Team B"), findsOneWidget);
+    expect(find.text('Team B'), findsOneWidget);
   });
 
   testWidgets('does not mutate the original list', (WidgetTester tester) async {
@@ -111,8 +111,10 @@ void main() {
         ),
       ),
     );
-    // Try to find a widget that would be rendered for an out-of-bounds index (should fallback to SizedBox.shrink)
-    // We can't directly trigger out-of-bounds, but we can check that no exceptions are thrown and the widget tree is built.
+    // Try to find a widget that would be rendered for an out-of-bounds index
+    // (should fallback to SizedBox.shrink)
+    // We can't directly trigger out-of-bounds, but we can check that
+    // no exceptions are thrown and the widget tree is built.
     expect(tester.takeException(), isNull);
   });
 
@@ -205,10 +207,13 @@ void main() {
     final state = tester.state(find.byType(AdvancedGroupedListView))
         as AdvancedGroupedListViewState;
     expect(state, isNotNull);
-    // topVisibleElementIndex may be null if not yet laid out, but should not throw
+    // topVisibleElementIndex may be null if not yet laid out,
+    //but should not throw
     expect(() => state.topVisibleElementIndex, returnsNormally);
-    // Try to scroll and check if topVisibleElementIndex updates (simulate scroll)
-    // Note: In widget tests, actual scrolling may not update ItemPositionsListener, but we can at least check getter is present
+    // Try to scroll and check if topVisibleElementIndex updates
+    // (simulate scroll)
+    // Note: In widget tests, actual scrolling may not update
+    // ItemPositionsListener, but we can at least check getter is present
   });
 
   testWidgets('developer.log is called for out-of-bounds index',
@@ -227,18 +232,21 @@ void main() {
           ),
         ),
       );
-      // Try to trigger out-of-bounds by calling buildItem with an invalid index via the state (reflection or test-only API would be better)
-      // As a workaround, we can check that no exceptions are thrown and rely on manual log inspection
+      // Try to trigger out-of-bounds by calling buildItem with an invalid index
+      // via the state (reflection or test-only API would be better)
+      // As a workaround, we can check that no exceptions are thrown and rely
+      // on manual log inspection
     }, (Object error, StackTrace stack) {
       logs.add(error.toString());
     });
-    // We can't directly assert on developer.log output, but this test ensures no exceptions are thrown
+    // We can't directly assert on developer.log output, but this test ensures
+    // no exceptions are thrown
     expect(logs, isEmpty);
   });
 
   testWidgets(
-      'works as a plain list when groupBy and groupSeparatorBuilder are omitted',
-      (WidgetTester tester) async {
+      'works as a plain list when groupBy and groupSeparatorBuilder '
+      'are omitted', (WidgetTester tester) async {
     final elements = [
       {'name': 'A'},
       {'name': 'B'},
@@ -491,7 +499,8 @@ void main() {
       // First element (index 0) should be visible at the top
       expect(state.topVisibleElementIndex, 0);
 
-      // Scroll down using the ScrollablePositionedList inside StickyGroupedListView
+      // Scroll down using the ScrollablePositionedList inside
+      // StickyGroupedListView
       final scrollable = find.byType(ScrollablePositionedList).first;
       await tester.drag(scrollable, const Offset(0, -150));
       await tester.pumpAndSettle();
@@ -529,7 +538,8 @@ void main() {
       );
 
       // In reverse mode, the last element should be visible at the top
-      // The exact index depends on the widget's height, but we can verify it's not null
+      // The exact index depends on the widget's height, but we can verify it's
+      // not null
       expect(state.topVisibleElementIndex, isNotNull);
     });
   });
