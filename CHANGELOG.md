@@ -1,4 +1,4 @@
-## [1.0.2] - 22.06.2025
+## [1.0.3] - 22.06.2025
 
 * Linter improvements and a bug fix for sticky header size calculation in scrollTo
 

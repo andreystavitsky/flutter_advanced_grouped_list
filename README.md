@@ -34,13 +34,13 @@ A `ListView` in which list items can be grouped to sections. Based on [scrollabl
  Add the package to your pubspec.yaml:
 
  ```yaml
- flutter_advanced_grouped_list: ^1.0.0
+advanced_grouped_list: ^1.0.3
  ```
  
  In your dart file, import the library:
 
  ```Dart
-import 'package:flutter_advanced_grouped_list/flutter_advanced_grouped_list.dart';
+import 'package:advanced_grouped_list/advanced_grouped_list.dart';
  ``` 
  
  Create a `AdvancedGroupedListView` Widget:
