@@ -12,6 +12,13 @@ class GroupedListElementManager<T, E> {
   /// Creates a [GroupedListElementManager] with the provided [cacheManager].
   GroupedListElementManager(this.cacheManager);
 
+  /// Clears memoized sorting state so the next build recomputes the list.
+  void clearMemoizedSort() {
+    _lastElements = null;
+    _lastOrderHash = null;
+    _lastSortedElements = null;
+  }
+
   /// Get the group for a given element index
   E getGroupForElementIndex(
     int elementIndex,
@@ -219,8 +226,6 @@ class GroupedListElementManager<T, E> {
 
   /// Dispose resources
   void dispose() {
-    _lastElements = null;
-    _lastOrderHash = null;
-    _lastSortedElements = null;
+    clearMemoizedSort();
   }
 }

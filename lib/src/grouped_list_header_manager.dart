@@ -27,7 +27,15 @@ class GroupedListHeaderManager<T, E> {
     int topElementIndex = 0,
     bool isScrollToInProgress = false,
   }) {
-    // Check trusted measurements first
+    // Check trusted measurements first, even when force-refreshing. Trusted
+    // values come from laid-out headers and should not be replaced by
+    // estimates.
+    final trustedDimension = cacheManager.getTrustedHeaderDimension(group);
+    if (trustedDimension != null) {
+      return trustedDimension;
+    }
+
+    // Check cached measurements and estimates next.
     if (!forceRefresh) {
       final cachedDimension = cacheManager.getCachedHeaderDimension(group);
       if (cachedDimension != null) {
@@ -87,6 +95,32 @@ class GroupedListHeaderManager<T, E> {
 
     cacheManager.updateHeaderDimension(group, estimatedHeight);
     return estimatedHeight;
+  }
+
+  /// Save the measured main-axis extent of a hidden header widget.
+  double? cacheMeasuredHeaderDimension(
+    E group,
+    RenderObject? renderObject,
+    Axis scrollDirection,
+  ) {
+    if (renderObject is! RenderBox) {
+      return null;
+    }
+
+    final measuredDimension = scrollDirection == Axis.vertical
+        ? renderObject.size.height
+        : renderObject.size.width;
+
+    if (measuredDimension <= 0) {
+      return null;
+    }
+
+    cacheManager.updateHeaderDimension(
+      group,
+      measuredDimension,
+      trusted: true,
+    );
+    return measuredDimension;
   }
 
   /// Estimate widget height based on widget type and content
@@ -170,7 +204,7 @@ class GroupedListHeaderManager<T, E> {
       }
     } catch (e) {
       developer.log('Error refreshing current header dimensions: $e',
-          name: 'StickyGroupedListView');
+          name: 'AdvancedGroupedListView');
     }
   }
 
@@ -240,7 +274,7 @@ class GroupedListHeaderManager<T, E> {
       }
     } catch (e) {
       developer.log('Error calculating alignment for element $elementIndex: $e',
-          name: 'StickyGroupedListView');
+          name: 'AdvancedGroupedListView');
     }
 
     return _calculateFallbackAlignment(offset, context, scrollDirection);
@@ -264,7 +298,7 @@ class GroupedListHeaderManager<T, E> {
       }
     } catch (e) {
       developer.log('Error calculating offset alignment: $e',
-          name: 'StickyGroupedListView');
+          name: 'AdvancedGroupedListView');
     }
 
     return 0.0;
@@ -311,7 +345,7 @@ class GroupedListHeaderManager<T, E> {
       }
     } catch (e) {
       developer.log('Error in fallback alignment calculation: $e',
-          name: 'StickyGroupedListView');
+          name: 'AdvancedGroupedListView');
     }
 
     return fallbackAlignment.clamp(-1.0, 1.0);

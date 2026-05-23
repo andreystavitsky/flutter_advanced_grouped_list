@@ -11,6 +11,10 @@ class GroupedListCacheManager<T, E> {
   /// Cache for element identifier results
   final Map<T, dynamic> _elementIdentifierCache = <T, dynamic>{};
 
+  /// Cache mapping element identifiers to their element indices for
+  /// O(1) fast lookup.
+  final Map<dynamic, int> _identifierToElementIndexMap = <dynamic, int>{};
+
   /// Cache for header dimensions by group
   final Map<E, double> _headerDimensionsCache = <E, double>{};
 
@@ -61,6 +65,7 @@ class GroupedListCacheManager<T, E> {
     _groupByCache.clear();
     _groupToIndicesMap.clear();
     _elementIdentifierCache.clear();
+    _identifierToElementIndexMap.clear();
 
     for (int i = 0; i < sortedElements.length; i++) {
       final element = sortedElements[i];
@@ -74,7 +79,9 @@ class GroupedListCacheManager<T, E> {
 
       // Cache identifier if available
       if (elementIdentifier != null) {
-        _elementIdentifierCache[element] = elementIdentifier(element);
+        final id = elementIdentifier(element);
+        _elementIdentifierCache[element] = id;
+        _identifierToElementIndexMap[id] = i;
       }
     }
 
@@ -97,6 +104,7 @@ class GroupedListCacheManager<T, E> {
     _groupByCache.clear();
     _groupToIndicesMap.clear();
     _elementIdentifierCache.clear();
+    _identifierToElementIndexMap.clear();
     clearHeaderCaches();
     _cachesNeedRebuild = true;
   }
@@ -126,6 +134,16 @@ class GroupedListCacheManager<T, E> {
     return _headerDimensionsCache[group];
   }
 
+  /// Returns whether this group has an accurate measured header dimension.
+  bool hasTrustedHeaderDimension(E group) {
+    return _trustedHeaderMeasurements.containsKey(group);
+  }
+
+  /// Returns the accurate measured header dimension for a group, if any.
+  double? getTrustedHeaderDimension(E group) {
+    return _trustedHeaderMeasurements[group];
+  }
+
   /// Check if header cache should be updated
   ///
   /// [group] The group whose header dimension is being checked.
@@ -151,5 +169,10 @@ class GroupedListCacheManager<T, E> {
   /// Dispose and clear all resources
   void dispose() {
     clearAllCaches();
+  }
+
+  /// Returns the cached index for the given element identifier.
+  int? getElementIndexByIdentifier(dynamic identifier) {
+    return _identifierToElementIndexMap[identifier];
   }
 }

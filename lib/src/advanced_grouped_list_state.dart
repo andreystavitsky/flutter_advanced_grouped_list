@@ -36,6 +36,11 @@ class AdvancedGroupedListViewState<T, E>
   /// Manager for position and scroll logic.
   late GroupedListPositionManager<T, E> _positionManager;
 
+  final GlobalKey _headerMeasurementKey = GlobalKey();
+  T? _headerMeasurementElement;
+  E? _headerMeasurementGroup;
+  Completer<double?>? _headerMeasurementCompleter;
+
   // Getters for controller access
   /// Returns the cache of element identifiers.
   Map<T, dynamic> get elementIdentifierCache =>
@@ -58,7 +63,7 @@ class AdvancedGroupedListViewState<T, E>
     if (null is E) return null as E;
     // Otherwise, throw informative error for any non-nullable E
     throw UnsupportedError(
-      'StickyGroupedListView: Cannot use plain list mode with '
+      'AdvancedGroupedListView: Cannot use plain list mode with '
       'non-nullable group type E = '
       '$E. Please specify groupBy or use a nullable type for E '
       '(e.g., E = Object?, String?, int?).',
@@ -112,6 +117,22 @@ class AdvancedGroupedListViewState<T, E>
     if (widget.itemScrollController != null &&
         !widget.itemScrollController!.isAttached) {
       widget.itemScrollController!.attachToState(this);
+    }
+
+    final shouldRebuildElementCaches = oldWidget.groupBy != widget.groupBy ||
+        oldWidget.groupComparator != widget.groupComparator ||
+        oldWidget.itemComparator != widget.itemComparator ||
+        oldWidget.order != widget.order ||
+        oldWidget.elementIdentifier != widget.elementIdentifier;
+    final shouldClearHeaderCaches = shouldRebuildElementCaches ||
+        oldWidget.groupSeparatorBuilder != widget.groupSeparatorBuilder ||
+        oldWidget.scrollDirection != widget.scrollDirection;
+
+    if (shouldRebuildElementCaches) {
+      _elementManager.clearMemoizedSort();
+      _cacheManager.clearAllCaches();
+    } else if (shouldClearHeaderCaches) {
+      _cacheManager.clearHeaderCaches();
     }
   }
 
@@ -223,7 +244,45 @@ class AdvancedGroupedListViewState<T, E>
                 },
               )
             : const SizedBox.shrink(),
+        if (_headerMeasurementElement != null)
+          _buildHiddenHeaderMeasurement(groupSeparatorBuilder),
       ],
+    );
+  }
+
+  Widget _buildHiddenHeaderMeasurement(
+      Widget Function(T) groupSeparatorBuilder) {
+    final element = _headerMeasurementElement;
+    if (element == null) {
+      return const SizedBox.shrink();
+    }
+
+    final measuredHeader = IgnorePointer(
+      child: ExcludeSemantics(
+        child: Opacity(
+          opacity: 0,
+          child: RepaintBoundary(
+            key: _headerMeasurementKey,
+            child: groupSeparatorBuilder(element),
+          ),
+        ),
+      ),
+    );
+
+    if (widget.scrollDirection == Axis.vertical) {
+      return Positioned(
+        left: 0,
+        right: 0,
+        top: 0,
+        child: measuredHeader,
+      );
+    }
+
+    return Positioned(
+      left: 0,
+      top: 0,
+      bottom: 0,
+      child: measuredHeader,
     );
   }
 
@@ -238,7 +297,7 @@ class AdvancedGroupedListViewState<T, E>
   Widget _buildItem(BuildContext context, int actualIndex) {
     if (actualIndex < 0 || actualIndex >= sortedElements.length) {
       developer.log('actualIndex $actualIndex out of bounds for sortedElements',
-          name: 'StickyGroupedListView');
+          name: 'AdvancedGroupedListView');
       return const SizedBox.shrink();
     }
     return widget.indexedItemBuilder == null
@@ -363,6 +422,110 @@ class AdvancedGroupedListViewState<T, E>
     );
   }
 
+  /// Returns whether the element's group already has a trusted header size.
+  bool _hasTrustedHeaderMeasurementForElementIndex(int elementIndex) {
+    if (elementIndex < 0 || elementIndex >= sortedElements.length) {
+      return false;
+    }
+    final group = getGroupForElementIndex(elementIndex);
+    return _cacheManager.hasTrustedHeaderDimension(group);
+  }
+
+  /// Measure the target element's group header offscreen when needed.
+  Future<double?> _ensureHeaderMeasuredForElementIndex(int elementIndex) async {
+    if (!mounted ||
+        !widget.showStickyHeader ||
+        widget.groupBy == null ||
+        widget.groupSeparatorBuilder == null ||
+        elementIndex < 0 ||
+        elementIndex >= sortedElements.length) {
+      return null;
+    }
+
+    final group = getGroupForElementIndex(elementIndex);
+    final trustedDimension = _cacheManager.getTrustedHeaderDimension(group);
+    if (trustedDimension != null) {
+      return trustedDimension;
+    }
+
+    refreshCurrentHeaderDimensions();
+    final refreshedDimension = _cacheManager.getTrustedHeaderDimension(group);
+    if (refreshedDimension != null) {
+      return refreshedDimension;
+    }
+
+    return _measureHeaderForGroup(group);
+  }
+
+  Future<double?> _measureHeaderForGroup(E group) async {
+    if (_headerMeasurementCompleter != null) {
+      if (_headerMeasurementGroup == group) {
+        return _headerMeasurementCompleter!.future;
+      }
+
+      await _headerMeasurementCompleter!.future;
+      final trustedDimension = _cacheManager.getTrustedHeaderDimension(group);
+      if (trustedDimension != null) {
+        return trustedDimension;
+      }
+    }
+
+    final firstElementIndex = getFirstElementIndexForGroup(group);
+    if (firstElementIndex < 0 || firstElementIndex >= sortedElements.length) {
+      return null;
+    }
+
+    final completer = Completer<double?>();
+    _headerMeasurementCompleter = completer;
+    _headerMeasurementGroup = group;
+    _headerMeasurementElement = sortedElements[firstElementIndex];
+
+    if (mounted) {
+      setState(() {});
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      double? measuredDimension;
+      try {
+        final renderObject =
+            _headerMeasurementKey.currentContext?.findRenderObject();
+        measuredDimension = _headerManager.cacheMeasuredHeaderDimension(
+          group,
+          renderObject,
+          widget.scrollDirection,
+        );
+
+        measuredDimension ??= getHeaderHeightForGroup(
+          group,
+          forceRefresh: true,
+        );
+      } catch (e) {
+        developer.log('Error measuring hidden group header: $e',
+            name: 'AdvancedGroupedListView');
+      }
+
+      if (_headerMeasurementCompleter == completer) {
+        if (mounted) {
+          setState(() {
+            _headerMeasurementElement = null;
+            _headerMeasurementGroup = null;
+            _headerMeasurementCompleter = null;
+          });
+        } else {
+          _headerMeasurementElement = null;
+          _headerMeasurementGroup = null;
+          _headerMeasurementCompleter = null;
+        }
+      }
+
+      if (!completer.isCompleted) {
+        completer.complete(measuredDimension);
+      }
+    });
+
+    return completer.future;
+  }
+
   /// Force refresh of current header dimensions.
   void refreshCurrentHeaderDimensions() {
     final groupBy = widget.groupBy ?? _defaultGroupBy;
@@ -388,4 +551,12 @@ class AdvancedGroupedListViewState<T, E>
       offset: offset,
     );
   }
+
+  /// Returns the cache manager. Visible for testing.
+  @visibleForTesting
+  GroupedListCacheManager<T, E> get cacheManager => _cacheManager;
+
+  /// Returns the top element index. Visible for testing.
+  @visibleForTesting
+  int get topElementIndex => _positionManager.topElementIndex;
 }

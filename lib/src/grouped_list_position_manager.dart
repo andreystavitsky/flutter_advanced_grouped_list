@@ -68,7 +68,7 @@ class GroupedListPositionManager<T, E> {
       if (_topElementIndex != index) {
         if (index < 0 || index >= sortedElements.length) {
           developer.log('index $index out of bounds for sortedElements',
-              name: 'StickyGroupedListView');
+              name: 'AdvancedGroupedListView');
           return;
         }
 
@@ -91,8 +91,9 @@ class GroupedListPositionManager<T, E> {
         // Cache the header size for the current group when it becomes visible
         _updateHeaderCache(curr, headerDimension);
 
+        _topElementIndex = index;
+
         if (prev != curr) {
-          _topElementIndex = index;
           _streamController.add(_topElementIndex);
 
           // Only call onGroupChanged if callback is provided and

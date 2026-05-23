@@ -26,32 +26,48 @@ class GroupedItemScrollController extends ItemScrollController {
     bool automaticAlignment = true,
     double offset = 0.0,
   }) {
+    Future<double?>? headerMeasurement;
+
     if (automaticAlignment) {
       // For jumpTo, force refresh of header dimensions
       // cache to get accurate measurements
       try {
-        final group =
-            _stickyGroupedListViewState!.getGroupForElementIndex(index);
+        final state = _stickyGroupedListViewState!;
+        final group = state.getGroupForElementIndex(index);
+
+        if (!state._hasTrustedHeaderMeasurementForElementIndex(index)) {
+          headerMeasurement = state._ensureHeaderMeasuredForElementIndex(index);
+        }
 
         // Force re-measurement of the header for target group
-        _stickyGroupedListViewState!
-            .getHeaderHeightForGroup(group, forceRefresh: true);
+        state.getHeaderHeightForGroup(group, forceRefresh: true);
 
         // Also refresh the current header dimensions if available
-        _stickyGroupedListViewState!.refreshCurrentHeaderDimensions();
+        state.refreshCurrentHeaderDimensions();
       } catch (e) {
         developer.log('Error refreshing header cache for jumpTo: $e',
-            name: 'StickyGroupedListView');
+            name: 'AdvancedGroupedListView');
       }
 
       alignment = _stickyGroupedListViewState!
           .calculateAlignmentForElement(index, offset: offset);
     }
-    super.jumpTo(index: index * 2 + 1, alignment: alignment);
+    final bool reverse = _stickyGroupedListViewState?.widget.reverse ?? false;
+    final int targetIndex = reverse ? index * 2 : index * 2 + 1;
+    super.jumpTo(index: targetIndex, alignment: alignment);
 
     // Schedule more aggressive corrections for jumpTo
     if (automaticAlignment) {
-      _scheduleScrollCorrection(index, alignment, isJump: true, offset: offset);
+      _scheduleScrollCorrection(index, isJump: true, offset: offset);
+      headerMeasurement?.then((_) {
+        final state = _stickyGroupedListViewState;
+        if (state == null || !state.mounted) return;
+        _performScrollCorrection(
+          index,
+          isJump: true,
+          offset: offset,
+        );
+      });
     }
   }
 
@@ -72,32 +88,31 @@ class GroupedItemScrollController extends ItemScrollController {
     List<double> opacityAnimationWeights = const [40, 20, 40],
     double offset = 0.0,
   }) async {
-    // Mark that scrollTo is in progress to prevent inaccurate cache updates
-    _stickyGroupedListViewState!.isScrollToInProgress = true;
+    final state = _stickyGroupedListViewState!;
 
     try {
       if (automaticAlignment) {
-        // Force measurement of header for target group
-        // before calculating alignment
+        // Measure the target header before calculating alignment so the first
+        // scroll can place variable-height items under the sticky header.
         try {
-          final group =
-              _stickyGroupedListViewState!.getGroupForElementIndex(index);
-
-          // Force measurement of the header for target group to ensure
-          // accurate alignment calculation on first scrollTo
-          _stickyGroupedListViewState!
-              .getHeaderHeightForGroup(group, forceRefresh: true);
+          await state._ensureHeaderMeasuredForElementIndex(index);
         } catch (e) {
           developer.log('Error pre-measuring header for scrollTo: $e',
-              name: 'StickyGroupedListView');
+              name: 'AdvancedGroupedListView');
         }
 
+        if (!state.mounted) return;
         alignment = _stickyGroupedListViewState!
             .calculateAlignmentForElement(index, offset: offset);
       }
 
+      // Mark that scrollTo is in progress to prevent inaccurate cache updates.
+      state.isScrollToInProgress = true;
+
+      final bool reverse = _stickyGroupedListViewState?.widget.reverse ?? false;
+      final int targetIndex = reverse ? index * 2 : index * 2 + 1;
       await super.scrollTo(
-        index: index * 2 + 1,
+        index: targetIndex,
         alignment: alignment,
         duration: duration,
         curve: curve,
@@ -106,8 +121,12 @@ class GroupedItemScrollController extends ItemScrollController {
 
       // Schedule a correction for the next frame to fix any measurement errors
       if (automaticAlignment) {
-        _scheduleScrollCorrection(index, alignment,
-            isJump: false, curve: curve, offset: offset);
+        _scheduleScrollCorrection(
+          index,
+          isJump: false,
+          curve: curve,
+          offset: offset,
+        );
       }
     } finally {
       // Mark scrollTo as completed after a delay to allow for settling
@@ -121,51 +140,44 @@ class GroupedItemScrollController extends ItemScrollController {
   /// Schedule a scroll correction to fix measurement errors from
   /// the first scroll.
   void _scheduleScrollCorrection(
-    int index,
-    double initialAlignment, {
+    int index, {
     required bool isJump,
     Curve? curve,
     double offset = 0.0,
   }) {
-    // First correction after the next frame
-
-    Future.delayed(
-      const Duration(milliseconds: 80),
-      () {
-        if (!_stickyGroupedListViewState!.mounted) return;
-        _performScrollCorrection(
-          index,
-          initialAlignment,
-          isJump: isJump,
-          duration: const Duration(milliseconds: 30),
-          curve: curve,
-          offset: offset,
-        );
-      },
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = _stickyGroupedListViewState;
+      if (state == null || !state.mounted) return;
+      _performScrollCorrection(
+        index,
+        isJump: isJump,
+        duration: const Duration(milliseconds: 30),
+        curve: curve,
+        offset: offset,
+      );
+    });
   }
 
   void _performScrollCorrection(
-    int index,
-    double initialAlignment, {
+    int index, {
     required bool isJump,
     Duration? duration,
     Curve? curve,
     double offset = 0.0,
   }) {
     try {
-      // Recalculate alignment with offset for more accurate correction
-      double correctedAlignment = initialAlignment;
-      if (offset != 0.0) {
-        correctedAlignment = _stickyGroupedListViewState!
-            .calculateAlignmentForElement(index, offset: offset);
-      }
+      // Always recalculate; hidden header measurement may have replaced an
+      // estimate even when offset is zero.
+      final correctedAlignment = _stickyGroupedListViewState!
+          .calculateAlignmentForElement(index, offset: offset);
 
+      final bool reverse = _stickyGroupedListViewState?.widget.reverse ?? false;
+      final int targetIndex = reverse ? index * 2 : index * 2 + 1;
       if (isJump) {
-        super.jumpTo(index: index * 2 + 1, alignment: correctedAlignment);
+        super.jumpTo(index: targetIndex, alignment: correctedAlignment);
       } else if (duration != null) {
         super.scrollTo(
-          index: index * 2 + 1,
+          index: targetIndex,
           alignment: correctedAlignment,
           duration: duration,
           curve: curve ?? Curves.easeOut,
@@ -174,7 +186,7 @@ class GroupedItemScrollController extends ItemScrollController {
       // }
     } catch (e) {
       developer.log('Error in scroll correction: $e',
-          name: 'StickyGroupedListView');
+          name: 'AdvancedGroupedListView');
     }
   }
 
@@ -232,6 +244,13 @@ class GroupedItemScrollController extends ItemScrollController {
   ///
   /// Returns the index if found, otherwise -1.
   int _findIndexByIdentifier(dynamic identifier) {
+    // 3.1: Use O(1) cache map for instant index lookup
+    final cachedIndex = _stickyGroupedListViewState!.cacheManager
+        .getElementIndexByIdentifier(identifier);
+    if (cachedIndex != null) {
+      return cachedIndex;
+    }
+
     final elements = _stickyGroupedListViewState!.sortedElements;
 
     // Use cached identifier results if available

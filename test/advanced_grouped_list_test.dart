@@ -543,4 +543,304 @@ void main() {
       expect(state.topVisibleElementIndex, isNotNull);
     });
   });
+
+  group('AdvancedGroupedListView TDD fixes tests', () {
+    testWidgets(
+        '2.1: reverse mode jumpTo uses correct element index (not separator)',
+        (WidgetTester tester) async {
+      final elements = ['A1', 'A2', 'A3', 'B1', 'B2', 'B3'];
+      final controller = GroupedItemScrollController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              height: 300,
+              child: AdvancedGroupedListView<String, String>(
+                elements: elements,
+                groupBy: (element) => element[0],
+                groupSeparatorBuilder: (element) =>
+                    SizedBox(height: 50, child: Text(element[0])),
+                itemBuilder: (context, element) =>
+                    SizedBox(height: 100, child: Text(element)),
+                itemScrollController: controller,
+                reverse: true,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Jump to element at index 2 ('A3')
+      controller.jumpTo(index: 2);
+      await tester.pumpAndSettle();
+
+      final state =
+          tester.state(find.byType(AdvancedGroupedListView<String, String>))
+              as AdvancedGroupedListViewState<String, String>;
+
+      // The topmost visible element index should be 3 in reverse mode
+      // (since item 2 is at the bottom).
+      // Under the old code, it returned 4 because it jumped to the separator.
+      expect(state.topVisibleElementIndex, 3);
+    });
+
+    testWidgets(
+        '2.4: topElementIndex updates when scrolling inside the same group',
+        (WidgetTester tester) async {
+      final elements = ['A1', 'A2', 'A3', 'A4'];
+      final controller = GroupedItemScrollController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              height: 150,
+              child: AdvancedGroupedListView<String, String>(
+                elements: elements,
+                groupBy: (element) => element[0],
+                groupSeparatorBuilder: (element) =>
+                    SizedBox(height: 50, child: Text(element[0])),
+                itemBuilder: (context, element) =>
+                    SizedBox(height: 100, child: Text(element)),
+                itemScrollController: controller,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final state =
+          tester.state(find.byType(AdvancedGroupedListView<String, String>))
+              as AdvancedGroupedListViewState<String, String>;
+
+      expect(state.topElementIndex, 0);
+
+      // Scroll down to the next element (still in the same group A)
+      controller.jumpTo(index: 1);
+      await tester.pumpAndSettle();
+
+      // Now topElementIndex should be 1.
+      expect(state.topElementIndex, 1);
+    });
+
+    testWidgets('3.1: O(1) search cache maps identifiers to correct indices',
+        (WidgetTester tester) async {
+      final elements = ['A1', 'A2', 'A3'];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              height: 300,
+              child: AdvancedGroupedListView<String, String>(
+                elements: elements,
+                groupBy: (element) => element[0],
+                groupSeparatorBuilder: (element) =>
+                    SizedBox(height: 50, child: Text(element[0])),
+                itemBuilder: (context, element) =>
+                    SizedBox(height: 100, child: Text(element)),
+                elementIdentifier: (element) => element,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final state =
+          tester.state(find.byType(AdvancedGroupedListView<String, String>))
+              as AdvancedGroupedListViewState<String, String>;
+
+      // getElementIndexByIdentifier should return 1 for identifier 'A2'
+      expect(state.cacheManager.getElementIndexByIdentifier('A2'), 1);
+    });
+  });
+
+  group('variable height header alignment', () {
+    testWidgets(
+        'scrollTo measures an unseen target group header before aligning',
+        (WidgetTester tester) async {
+      final controller = GroupedItemScrollController();
+      final listKey = UniqueKey();
+      final elements = _buildVariableHeightElements();
+
+      await tester.pumpWidget(
+        _buildVariableHeightList(
+          listKey: listKey,
+          controller: controller,
+          elements: elements,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('item-9')), findsNothing);
+
+      final scrollFuture = controller.scrollTo(
+        index: 9,
+        duration: const Duration(milliseconds: 20),
+      );
+      await _pumpProgrammaticScroll(tester, scrollFuture);
+
+      _expectItemBelowStickyHeader(
+        tester,
+        listKey: listKey,
+        itemIndex: 9,
+        headerHeight: 100,
+      );
+
+      final state = tester.state(
+        find.byType(
+          AdvancedGroupedListView<_VariableHeightElement, String>,
+        ),
+      ) as AdvancedGroupedListViewState<_VariableHeightElement, String>;
+      expect(state.cacheManager.getTrustedHeaderDimension('Group 3'), 100);
+
+      final repeatedScrollFuture = controller.scrollTo(
+        index: 9,
+        duration: const Duration(milliseconds: 20),
+      );
+      await _pumpProgrammaticScroll(tester, repeatedScrollFuture);
+
+      _expectItemBelowStickyHeader(
+        tester,
+        listKey: listKey,
+        itemIndex: 9,
+        headerHeight: 100,
+      );
+    });
+
+    testWidgets('jumpTo corrects alignment after measuring an unseen header',
+        (WidgetTester tester) async {
+      final controller = GroupedItemScrollController();
+      final listKey = UniqueKey();
+      final elements = _buildVariableHeightElements();
+
+      await tester.pumpWidget(
+        _buildVariableHeightList(
+          listKey: listKey,
+          controller: controller,
+          elements: elements,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('item-9')), findsNothing);
+
+      controller.jumpTo(index: 9);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
+
+      _expectItemBelowStickyHeader(
+        tester,
+        listKey: listKey,
+        itemIndex: 9,
+        headerHeight: 100,
+      );
+    });
+  });
+}
+
+class _VariableHeightElement {
+  final int index;
+  final String group;
+  final double height;
+
+  const _VariableHeightElement(this.index, this.group, this.height);
+}
+
+List<_VariableHeightElement> _buildVariableHeightElements() {
+  return const <_VariableHeightElement>[
+    _VariableHeightElement(0, 'Group 1', 50),
+    _VariableHeightElement(1, 'Group 1', 80),
+    _VariableHeightElement(2, 'Group 1', 120),
+    _VariableHeightElement(3, 'Group 2', 60),
+    _VariableHeightElement(4, 'Group 2', 100),
+    _VariableHeightElement(5, 'Group 2', 60),
+    _VariableHeightElement(6, 'Group 2', 90),
+    _VariableHeightElement(7, 'Group 3', 70),
+    _VariableHeightElement(8, 'Group 3', 110),
+    _VariableHeightElement(9, 'Group 3', 70),
+    _VariableHeightElement(10, 'Group 3', 85),
+    _VariableHeightElement(11, 'Group 3', 130),
+    _VariableHeightElement(12, 'Group 4', 70),
+    _VariableHeightElement(13, 'Group 4', 110),
+  ];
+}
+
+Widget _buildVariableHeightList({
+  required Key listKey,
+  required GroupedItemScrollController controller,
+  required List<_VariableHeightElement> elements,
+}) {
+  const headerHeights = <String, double>{
+    'Group 1': 60,
+    'Group 2': 80,
+    'Group 3': 100,
+    'Group 4': 150,
+  };
+
+  return MaterialApp(
+    home: Scaffold(
+      body: SizedBox(
+        key: listKey,
+        height: 500,
+        child: AdvancedGroupedListView<_VariableHeightElement, String>(
+          elements: elements,
+          groupBy: (element) => element.group,
+          groupComparator: (left, right) => left.compareTo(right),
+          itemComparator: (left, right) => left.index.compareTo(right.index),
+          groupSeparatorBuilder: (element) {
+            final height = headerHeights[element.group]!;
+            return ColoredBox(
+              color: Colors.transparent,
+              child: SizedBox(
+                height: height,
+                width: double.infinity,
+                child: Text(element.group),
+              ),
+            );
+          },
+          indexedItemBuilder: (context, element, index) {
+            return SizedBox(
+              key: ValueKey('item-${element.index}'),
+              height: element.height,
+              child: Text('Item ${element.index}'),
+            );
+          },
+          itemScrollController: controller,
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> _pumpProgrammaticScroll(
+  WidgetTester tester,
+  Future<void> scrollFuture,
+) async {
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 16));
+  await tester.pumpAndSettle();
+  await tester.pump(const Duration(milliseconds: 120));
+  await scrollFuture;
+  await tester.pumpAndSettle();
+}
+
+void _expectItemBelowStickyHeader(
+  WidgetTester tester, {
+  required Key listKey,
+  required int itemIndex,
+  required double headerHeight,
+}) {
+  final listTop = tester.getTopLeft(find.byKey(listKey)).dy;
+  final itemTop = tester.getTopLeft(find.byKey(ValueKey('item-$itemIndex'))).dy;
+
+  expect(itemTop, moreOrLessEquals(listTop + headerHeight, epsilon: 3));
 }
